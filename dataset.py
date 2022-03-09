@@ -31,9 +31,35 @@ class SeqClsDataset(Dataset):
         return len(self.label_mapping)
 
     def collate_fn(self, samples: List[Dict]) -> Dict:
-        # TODO: implement collate_fn
-        raise NotImplementedError
+        """Used for padding variable-length and convert to token_id.
 
+        Args:
+            samples (List[Dict]):   A batch of samples.
+                                    [{'text':,'intent':,'id':},{},...]
+
+        Returns:
+            if labels in sampless
+                Dict: {'features': padded token id, 'labels': intent to label id, 'id': list of string}
+            else
+                Dict: {'features': padded token id, 'labels': empty array, 'id': list of string}
+        """
+        # sample['text'] to padded token_id
+        batch_tokens : List[List[str]] = [sample['text'].split() for sample in samples]
+        padded_ids = self.vocab.encode_batch(batch_tokens=batch_tokens, to_len=self.max_len)
+
+        if "intent" in samples[0]:
+            labels = [self.label2idx(sample['intent']) for sample in samples]
+        else:
+            labels = []
+
+        ids = [sample['id'] for sample in samples]
+        
+        return {'features': padded_ids, 'labels': labels, 'ids': ids}
+        
+        # TODO: implement collate_fn
+        # raise NotImplementedError
+        
+        
     def label2idx(self, label: str):
         return self.label_mapping[label]
 

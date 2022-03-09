@@ -1,0 +1,9 @@
+*.txt
+*.zip
+*.png
+*.pyc
+
+cache/
+ckpt/
+
+___pycache__/*

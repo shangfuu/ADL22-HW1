@@ -5,6 +5,8 @@ from pathlib import Path
 from typing import Dict
 
 import torch
+from torch.utils.data import DataLoader
+from  tqdm import tqdm
 
 from dataset import SeqClsDataset
 from model import SeqClassifier
@@ -21,6 +23,7 @@ def main(args):
     data = json.loads(args.test_file.read_text())
     dataset = SeqClsDataset(data, vocab, intent2idx, args.max_len)
     # TODO: crecate DataLoader for test dataset
+    dataloader = DataLoader(dataset, batch_size=args.batch_size, collate_fn=dataset.collate_fn, shuffle=True)
 
     embeddings = torch.load(args.cache_dir / "embeddings.pt")
 
@@ -31,16 +34,39 @@ def main(args):
         args.dropout,
         args.bidirectional,
         dataset.num_classes,
+        args.max_len
     )
     model.eval()
 
     ckpt = torch.load(args.ckpt_path)
     # load weights into model
+    model.load_state_dict(ckpt)
 
     # TODO: predict dataset
+    rst_dict = {}
+    model.eval()
+    for test_data in tqdm(dataloader, desc="Test"):
+        with torch.no_grad():
+            features, ids = test_data['features'], test_data['ids']
+            features = torch.tensor(features).to(args.device)
+            
+            out = model(features).to(args.device)
+            _, preds = torch.max(out, 1)
+            
+            preds = preds.cpu().numpy()
+            # print(preds.shape)
+            # print(preds)
 
+            for i, pred in enumerate(preds):
+                rst_dict[ids[i]] = dataset.idx2label(idx=pred)
+    
+    assert len(rst_dict) == 4500
     # TODO: write prediction to file (args.pred_file)
-
+    with open(args.pred_file, "w") as f:
+        f.write('id,intent\n')
+        for id, intent in rst_dict.items():
+            f.write('{},{}\n'.format(id, intent))
+    
 
 def parse_args() -> Namespace:
     parser = ArgumentParser()
@@ -65,16 +91,16 @@ def parse_args() -> Namespace:
     parser.add_argument("--pred_file", type=Path, default="pred.intent.csv")
 
     # data
-    parser.add_argument("--max_len", type=int, default=128)
+    parser.add_argument("--max_len", type=int, default=32)
 
     # model
-    parser.add_argument("--hidden_size", type=int, default=512)
+    parser.add_argument("--hidden_size", type=int, default=1024)
     parser.add_argument("--num_layers", type=int, default=2)
-    parser.add_argument("--dropout", type=float, default=0.1)
-    parser.add_argument("--bidirectional", type=bool, default=True)
+    parser.add_argument("--dropout", type=float, default=0.2)
+    parser.add_argument("--bidirectional", type=bool, default=False)
 
     # data loader
-    parser.add_argument("--batch_size", type=int, default=128)
+    parser.add_argument("--batch_size", type=int, default=256)
 
     parser.add_argument(
         "--device", type=torch.device, help="cpu, cuda, cuda:0, cuda:1", default="cpu"
