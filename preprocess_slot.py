@@ -35,6 +35,20 @@ def main(args):
     build_vocab(words, args.vocab_size, args.output_dir, args.glove_path)
 
 
+def max_len():
+    max_lens = []
+    for split in ["train", "eval", "test"]:
+        dataset_path = args.data_dir / f"{split}.json"
+        dataset = json.loads(dataset_path.read_text())
+        logging.info(f"Dataset loaded at {str(dataset_path.resolve())}")
+        
+        max_len = max([len(tag) for instance in dataset for tag in instance["tokens"]])
+    
+        max_lens.append(max_len)
+        print(max_len)
+    print(max(max_lens))
+
+
 def parse_args() -> Namespace:
     parser = ArgumentParser()
     parser.add_argument(
@@ -70,3 +84,4 @@ if __name__ == "__main__":
     args = parse_args()
     args.output_dir.mkdir(parents=True, exist_ok=True)
     main(args)
+    # max_len()

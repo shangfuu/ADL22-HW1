@@ -116,7 +116,7 @@ class SlotTagDataset(Dataset):
         
         padded_ids = self.vocab.encode_batch(batch_tokens=batch_tokens, to_len=self.max_len)
         
-        labels: List[List[int]]
+        labels: List[List[int]] = []
         
         ids = [sample['id'] for sample in samples]
 
@@ -127,7 +127,8 @@ class SlotTagDataset(Dataset):
                 # padding
                 for idx, padded_id in enumerate(padded_ids[batch]):
                     if padded_id == 0:
-                        tag = self.label2idx(self.padd_label())
+                        # tag = self.label2idx(self.padd_label())
+                        tag = self.num_classes
                     else:
                         tag = self.label2idx(sample['tags'][idx])
                     tmp.append(tag)

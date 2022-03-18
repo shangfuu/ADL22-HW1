@@ -19,7 +19,7 @@ bash preprocess.sh
 python train_intent.py
 ```
 
-# 實驗紀錄
+# 實驗紀錄 - intent
 | name | val_acc | lr | hidden_size | num_layers | max_len | dropout | batch_size | num_epoch | dropout_layer | shuffle | others |
 | ---- | ------- | -- | ----------- | ---------- | ------- | ------- | ---------- | --------- | ------------ | -------- | ------ |
 | bset_0.ckpt | 0.83 | 1e-3 | 1024    |   2      |   32    |  0.2   |   256    |   200  | false | false |
@@ -35,6 +35,20 @@ python train_intent.py
 | best_6.ckpt | 0.943 | 1e-3 | 128 | 2 | 32 | 0.3 | 512 | 100 | False | true | dropout BN LR(0.1), scheduler(step10, 0.5) |
 | best_7.ckpt | 0.939 | 1e-3 | 128 | 2 | 32 | 0.2 | 512 | 100 | False | true | dropout BN LR(0.15), scheduler(step10, 0.5) |
 
+# 實驗紀錄 - intent
+| name | val_acc | lr | hidden_size | num_layers | max_len | dropout | batch_size | num_epoch | dropout_layer | shuffle | others |
+| ---- | ------- | -- | ----------- | ---------- | ------- | ------- | ---------- | --------- | ------------ | -------- | ------ |
+| bset_7.ckpt | 0.77 | 1e-3 | 128    |   3      |   32    |  0.2   |   512    |   100  | 0.2 | true | |
+| best_7.ckpt | 0.781 | 1e-3 | 128    |   3      |   32    |  0.2   |   512    |   100  | 0.2 | true | add another linear 1024 |
+| best_7.ckpt | 0.74 | 1e-3 | 128    |   2      |   32    |  0.2   |   512    |   100  | 0.2 | true | without layer norm |
+| best_7.ckpt | 0.765 | 1e-3 | 128    |   2      |   32    |  0.2   |   512    |   100  | 0.2 | true | layer norm SiLU |
+| best_7.ckpt | 0.783 | 1e-3 | 128    |   2      |   16    |  0.2   |   512    |   100  | 0.2 | true | layer norm SiLU |
+| best_7.ckpt | 0.77 | 1e-3 | 128    |   2      |   56    |  0.2   |   512    |   100  | 0.2 | true | layer norm SiLU |
+| best_7.ckpt | 0.789 | 1e-3 | 128    |   2      |   16    |  0.2   |   512    |   100  | 0.2 | true | layer norm SiLU, padding with index 9 |
+| best_7.ckpt | 0.776 | 1e-3 | 64    |   2    |   16    |  0.2   |   512    |   100  | 0.2 | true | layer norm SiLU, padding with index 9 |
+| best_7.ckpt | 0.783 | 1e-3 | 128    |   3    |   16    |  0.2   |   512    |   100  | 0.2 | true | layer norm SiLU, padding with index 9 |
+| best_1.ckpt | 0.775 | 1e-3 | 128    |   2    |   16    |  0.2   |   512    |   100  | 0.2 | true | layer norm SiLU, padding with index 9 |
+| best_1.ckpt | 0.801 | 1e-3 | 128    |   2    |   16    |  0.2   |   512    |   100  | 0.2 | true | layer norm SiLU, padding with index 9, batch_norm |
 
 
 # Report

@@ -53,7 +53,7 @@ def main(args):
     # TODO: init optimizer
     optimizer = torch.optim.Adam(model.parameters(),lr=args.lr)
     # optimizer = torch.optim.Adam(model.parameters(),lr=args.lr, weight_decay=0.001)
-    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=10, gamma=0.5)
+    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=20, gamma=0.5)
     criterion = torch.nn.CrossEntropyLoss(label_smoothing=0.1)
 
     best_acc = 0.0
@@ -109,7 +109,7 @@ def main(args):
                 out = model(features)
                 
                 loss = criterion(out, labels)
-                _, pred = torch.max(out,1)
+                _, pred = torch.max(out, 1)
                 
                 # eval_correct += (pred.cpu() == labels.cpu()).sum().item()
                 eval_correct += sum([1 if seq.all() else 0 for seq in (pred.cpu() == labels.cpu())])
@@ -119,7 +119,7 @@ def main(args):
         # eval_acc = eval_correct / len(dataloader[DEV])
         eval_acc = eval_correct / len(data[DEV])
         eval_loss /= len(dataloader[DEV])
-        
+
         eval_acc_curve.append(eval_acc)
         eval_loss_curve.append(eval_loss)
         train_loss_curve.append(train_loss)
@@ -132,8 +132,12 @@ def main(args):
         # late accuracy and save model weights
         if eval_acc > best_acc:
             best_acc = eval_acc
-            torch.save(model.state_dict(), args.ckpt_dir / 'best_7.pt')
+            torch.save(model.state_dict(), args.ckpt_dir / 'best_1.pt')
             print('saving model with acc {:.4f}'.format(best_acc))
+            
+        # # early stop
+        # if len(eval_acc_curve) > 40 and (max(eval_acc_curve[-20:]) - best_acc) < 0.01:
+        #     break
     
         plt.plot(eval_acc_curve)
         plt.plot(train_acc_curve)
@@ -178,7 +182,7 @@ def parse_args() -> Namespace:
     )
 
     # data
-    parser.add_argument("--max_len", type=int, default=32)
+    parser.add_argument("--max_len", type=int, default=16)
 
     # model
     parser.add_argument("--hidden_size", type=int, default=128)
