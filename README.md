@@ -28,6 +28,14 @@ python train_intent.py
 | best_3.ckpt | 0.88 | 1e-3 | 1024 | 2 | 32 | 0.1 | 256 | 50 | after fc | true |
 | best_3.ckpt | 0.88 | 1e-3 | 512 | 2 | 32 | 0.1 | 128 | 50 | after fc | true |
 | best_3.ckpt | 0.8923 | 1e-3 | 1024 | 2 | 32 | 0.2 | 64 | 50 | after fc | true |
+| best_4.ckpt | 0.92 | 1e-3 | 64 | 2 | 32 | 0.2 | 512 | 100 | False | True | two layer fc with BN ReLU |
+| best_4.ckpt | 0.929 | 1e-3 | 64 | 2 | 32 | 0.2 | 512 | 100 | False | true | dropout BN LR, wd=0.000001 |
+| best_4.ckpt | 0.938 | 1e-3 | 128 | 2 | 32 | 0.2 | 512 | 100 | False | True | tow layer fc with BN and LeakyReLU |
+| best_5.ckpt | 0.937 | 1e-3 | 128 | 2 | 32 | 0.3 | 512 | 100 | False | true | dropout BN LR(0.4),（會 fit 爛）scheduler(step10, 0.5) |
+| best_6.ckpt | 0.943 | 1e-3 | 128 | 2 | 32 | 0.3 | 512 | 100 | False | true | dropout BN LR(0.1), scheduler(step10, 0.5) |
+| best_7.ckpt | 0.939 | 1e-3 | 128 | 2 | 32 | 0.2 | 512 | 100 | False | true | dropout BN LR(0.15), scheduler(step10, 0.5) |
+
+
 
 # Report
 ## Q1

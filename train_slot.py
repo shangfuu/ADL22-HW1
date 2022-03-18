@@ -8,9 +8,10 @@ import torch
 from tqdm import trange, tqdm
 from torch.utils.data import DataLoader
 import matplotlib.pyplot as plt
+import numpy as np
 
-from model import SeqClassifier
-from dataset import SeqClsDataset
+from model import SlottTagger
+from dataset import SlotTagDataset
 from utils import Vocab
 
 TRAIN = "train"
@@ -22,16 +23,16 @@ def main(args):
     with open(args.cache_dir / "vocab.pkl", "rb") as f:
         vocab: Vocab = pickle.load(f)
 
-    intent_idx_path = args.cache_dir / "intent2idx.json"
-    intent2idx: Dict[str, int] = json.loads(intent_idx_path.read_text())
+    tag_idx_path = args.cache_dir / "tag2idx.json"
+    tag2idx: Dict[str, int] = json.loads(tag_idx_path.read_text())
 
     data_paths = {split: args.data_dir / f"{split}.json" for split in SPLITS}
     data = {split: json.loads(path.read_text()) for split, path in data_paths.items()}
-    datasets: Dict[str, SeqClsDataset] = {
-        split: SeqClsDataset(split_data, vocab, intent2idx, args.max_len)
+    datasets: Dict[str, SlotTagDataset] = {
+        split: SlotTagDataset(split_data, vocab, tag2idx, args.max_len)
         for split, split_data in data.items()
     }
-    
+
     # TODO: create DataLoader for train / dev datasets
     dataloader: Dict[str, DataLoader] = {
         split: (DataLoader(dataset, batch_size=args.batch_size, collate_fn=dataset.collate_fn, shuffle=True) 
@@ -42,9 +43,9 @@ def main(args):
     
     embeddings = torch.load(args.cache_dir / "embeddings.pt")
 
-    num_classes = len(intent2idx)
+    num_classes = len(tag2idx)
     # TODO: init model and move model to target device(cpu / gpu)
-    model = SeqClassifier(embeddings=embeddings, hidden_size=args.hidden_size, 
+    model = SlottTagger(embeddings=embeddings, hidden_size=args.hidden_size, 
                           num_layers=args.num_layers, dropout=args.dropout,
                           bidirectional=args.bidirectional, num_class=num_classes,
                           sequence_length=args.max_len).to(args.device)
@@ -53,7 +54,7 @@ def main(args):
     optimizer = torch.optim.Adam(model.parameters(),lr=args.lr)
     # optimizer = torch.optim.Adam(model.parameters(),lr=args.lr, weight_decay=0.001)
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=10, gamma=0.5)
-    criterion = torch.nn.CrossEntropyLoss()
+    criterion = torch.nn.CrossEntropyLoss(label_smoothing=0.1)
 
     best_acc = 0.0
     train_acc_curve = []
@@ -72,11 +73,11 @@ def main(args):
         print(f"\nEpoch: {epoch+1} / {args.num_epoch}")
         for train_data in tqdm(dataloader[TRAIN], desc="Train"):
 
-            features, labels, ids = train_data['features'], train_data['labels'], train_data['ids']
+            features, labels, ids = train_data['tokens'], train_data['tags'], train_data['ids']
             features, labels = torch.tensor(features).to(args.device), torch.tensor(labels).to(args.device)
             
             out = model(features)
-
+            
             optimizer.zero_grad()
             loss = criterion(out, labels)
             
@@ -84,7 +85,10 @@ def main(args):
             optimizer.step()
 
             _, pred = torch.max(out,1)
-            train_correct += (pred.cpu() == labels.cpu()).sum().item()
+            
+            # train_correct += [1 if (pred.cpu() == labels.cpu()).all() else 0]
+            train_correct += sum([1 if seq.all() else 0 for seq in (pred.cpu() == labels.cpu())])
+            
             # train_correct += (out.argmax(dim=-1) == labels).float().mean()
             train_loss += loss.item()
         
@@ -100,13 +104,16 @@ def main(args):
         eval_loss = .0
         for eval_data in tqdm(dataloader[DEV], desc="Val"):
             with torch.no_grad():
-                features, labels, ids = eval_data['features'], eval_data['labels'], eval_data['ids']
+                features, labels, ids = eval_data['tokens'], eval_data['tags'], eval_data['ids']
                 features, labels = torch.tensor(features).to(args.device), torch.tensor(labels).to(args.device)
                 out = model(features)
+                
                 loss = criterion(out, labels)
                 _, pred = torch.max(out,1)
-                eval_correct += (pred.cpu() == labels.cpu()).sum().item()
-                # eval_correct += (out.argmax(dim=-1) == labels).float().mean()
+                
+                # eval_correct += (pred.cpu() == labels.cpu()).sum().item()
+                eval_correct += sum([1 if seq.all() else 0 for seq in (pred.cpu() == labels.cpu())])
+                
                 eval_loss += loss.item()
 
         # eval_acc = eval_correct / len(dataloader[DEV])
@@ -125,7 +132,7 @@ def main(args):
         # late accuracy and save model weights
         if eval_acc > best_acc:
             best_acc = eval_acc
-            torch.save(model.state_dict(), args.ckpt_dir / 'best_7.ckpt')
+            torch.save(model.state_dict(), args.ckpt_dir / 'best_7.pt')
             print('saving model with acc {:.4f}'.format(best_acc))
     
         plt.plot(eval_acc_curve)
@@ -155,19 +162,19 @@ def parse_args() -> Namespace:
         "--data_dir",
         type=Path,
         help="Directory to the dataset.",
-        default="./data/intent/",
+        default="./data/slot/",
     )
     parser.add_argument(
         "--cache_dir",
         type=Path,
         help="Directory to the preprocessed caches.",
-        default="./cache/intent/",
+        default="./cache/slot/",
     )
     parser.add_argument(
         "--ckpt_dir",
         type=Path,
         help="Directory to save the model file.",
-        default="./ckpt/intent/",
+        default="./ckpt/slot/",
     )
 
     # data

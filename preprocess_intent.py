@@ -68,24 +68,6 @@ def build_vocab(
     logging.info(f"Embedding shape: {embeddings.shape}")
     logging.info(f"Embedding saved at {str(embedding_path.resolve())}")
 
-def longest_sequence():
-    longest_len = .0
-
-    for split in ["train", "eval", "test"]:
-        dataset_path = args.data_dir / f"{split}.json"
-        dataset = json.loads(dataset_path.read_text())
-        logging.info(f"Dataset loaded at {str(dataset_path.resolve())}")
-        
-        
-        for instance in dataset:
-            length = .0
-            for _ in instance["text"].split():
-                length += 1
-            if length > longest_len:
-                longest_len = length
-    
-    logging.info(f"longest sequence length: {longest_len}")
-
 def main(args):
     seed(args.rand_seed)
 
@@ -144,4 +126,3 @@ if __name__ == "__main__":
     args = parse_args()
     args.output_dir.mkdir(parents=True, exist_ok=True)
     main(args)
-    # longest_sequence()

@@ -8,8 +8,8 @@ import torch
 from torch.utils.data import DataLoader
 from  tqdm import tqdm
 
-from dataset import SeqClsDataset
-from model import SeqClassifier
+from dataset import SlotTagDataset
+from model import SlottTagger
 from utils import Vocab
 
 
@@ -17,17 +17,17 @@ def main(args):
     with open(args.cache_dir / "vocab.pkl", "rb") as f:
         vocab: Vocab = pickle.load(f)
 
-    intent_idx_path = args.cache_dir / "intent2idx.json"
-    intent2idx: Dict[str, int] = json.loads(intent_idx_path.read_text())
+    tag_idx_path = args.cache_dir / "tag2idx.json"
+    tag2idx: Dict[str, int] = json.loads(tag_idx_path.read_text())
 
     data = json.loads(args.test_file.read_text())
-    dataset = SeqClsDataset(data, vocab, intent2idx, args.max_len)
+    dataset = SlotTagDataset(data, vocab, tag2idx, args.max_len)
     # TODO: crecate DataLoader for test dataset
     dataloader = DataLoader(dataset, batch_size=args.batch_size, collate_fn=dataset.collate_fn, shuffle=False)
 
     embeddings = torch.load(args.cache_dir / "embeddings.pt")
 
-    model = SeqClassifier(
+    model = SlottTagger(
         embeddings,
         args.hidden_size,
         args.num_layers,
@@ -47,25 +47,30 @@ def main(args):
     model.eval()
     for test_data in tqdm(dataloader, desc="Test"):
         with torch.no_grad():
-            features, ids = test_data['features'], test_data['ids']
+            features, length, ids = test_data['tokens'], test_data['length'], test_data['ids']
             features = torch.tensor(features).to(args.device)
             
             out = model(features).to(args.device)
-            _, preds = torch.max(out, 1)
+            
+            out = torch.permute(out, (0,2,1))
+            
+            _, preds = torch.max(out, 2)
             
             preds = preds.cpu().numpy()
+            
             # print(preds.shape)
             # print(preds)
 
-            for i, pred in enumerate(preds):
-                rst_dict[ids[i]] = dataset.idx2label(idx=pred)
+            for i, preds in enumerate(preds):
+                preds = preds[:length[i]]
+                rst_dict[ids[i]] = [dataset.idx2label(idx=pred_id) for pred_id in preds]
     
-    assert len(rst_dict) == 4500
     # TODO: write prediction to file (args.pred_file)
     with open(args.pred_file, "w") as f:
-        f.write('id,intent\n')
-        for id, intent in rst_dict.items():
-            f.write('{},{}\n'.format(id, intent))
+        f.write('id,tags\n')
+        for id, tag_list in rst_dict.items():
+            tag = ''.join(tag + " " for tag in tag_list).strip()
+            f.write('{},{}\n'.format(id, tag))
     
 
 def parse_args() -> Namespace:
@@ -80,7 +85,7 @@ def parse_args() -> Namespace:
         "--cache_dir",
         type=Path,
         help="Directory to the preprocessed caches.",
-        default="./cache/intent/",
+        default="./cache/slot/",
     )
     parser.add_argument(
         "--ckpt_path",
@@ -88,7 +93,7 @@ def parse_args() -> Namespace:
         help="Path to model checkpoint.",
         required=True
     )
-    parser.add_argument("--pred_file", type=Path, default="pred.intent.csv")
+    parser.add_argument("--pred_file", type=Path, default="pred.slot.csv")
 
     # data
     parser.add_argument("--max_len", type=int, default=32)
