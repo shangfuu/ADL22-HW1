@@ -77,20 +77,18 @@ def main(args):
                         sequence_length=args.max_len).to(args.device)
 
     # TODO: init optimizer
-    # optimizer = torch.optim.Adam(
-    #     model.parameters(), lr=args.lr, weight_decay=1e-8)
+    optimizer = torch.optim.Adam(
+        model.parameters(), lr=args.lr, weight_decay=1e-8)
     
-    optimizer = torch.optim.SGD(model.parameters(), lr=args.lr)
-    
+    # optimizer = torch.optim.SGD(model.parameters(), lr=args.lr)
     # optimizer = torch.optim.RMSprop(model.parameters(), lr=args.lr, weight_decay=1e-8, momentum=0.9)
-    
     # scheduler = torch.optim.lr_scheduler.StepLR(
     #     optimizer, step_size=200, gamma=0.5)
 
     # criterion = torch.nn.CrossEntropyLoss(label_smoothing=0.1)
     criterion = torch.nn.CrossEntropyLoss(
         weight=class_weight, label_smoothing=0.01)
-    criterion = focal_loss(alpha=class_weight, gamma=2, reduction='mean', device=args.device)
+    # criterion = focal_loss(alpha=class_weight, gamma=2, reduction='mean', device=args.device)
 
     best_f1 = .0
     # best_loss = float('inf')
@@ -178,7 +176,7 @@ def main(args):
         # late accuracy and save model weights
         if eval_acc > best_f1:
             best_f1 = eval_acc
-            torch.save(model.state_dict(), args.ckpt_dir / 'best_1.pt')
+            torch.save(model.state_dict(), args.ckpt_dir / 'best_2.pt')
             print('saving model with loss {:.4f}'.format(best_f1))
 
         # # early stop
