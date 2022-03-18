@@ -49,7 +49,7 @@ python train_intent.py
 | best_7.ckpt | 0.783 | 1e-3 | 128    |   3    |   16    |  0.2   |   512    |   100  | 0.2 | true | layer norm SiLU, padding with index 9 |
 | best_1.ckpt | 0.775 | 1e-3 | 128    |   2    |   16    |  0.2   |   512    |   100  | 0.2 | true | layer norm SiLU, padding with index 9 |
 | best_1.ckpt | 0.801 | 1e-3 | 128    |   2    |   16    |  0.2   |   512    |   100  | 0.2 | true | layer norm SiLU, padding with index 9, batch_norm |
-
+| best_1.ckpt | 0.801 | 1e-3 | 128    |   2    |   16    |  0.2   |   512    |   100  | 0.2 | true | layer norm GELU, padding with index 9, batch_norm (pass baseline: 0.728) |
 
 # Report
 ## Q1
