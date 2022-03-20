@@ -119,6 +119,8 @@ class SlotTagDataset(Dataset):
         labels: List[List[int]] = []
         
         ids = [sample['id'] for sample in samples]
+        
+        length = [len(sample['tokens']) for batch, sample in enumerate(samples)]
 
         if "tags" in samples[0]:
             # pad label
@@ -133,17 +135,16 @@ class SlotTagDataset(Dataset):
                     tmp.append(tag)
                 labels.append(tmp)
             
-            return {'tokens': padded_ids, 'tags': labels, 'ids': ids}
-        else:
-            length = [len(sample['tokens']) for batch, sample in enumerate(samples)]
+            # return {'tokens': padded_ids, 'tags': labels, 'ids': ids}
+        # else:
+            # length = [len(sample['tokens']) for batch, sample in enumerate(samples)]
 
-            return {'tokens': padded_ids, 'length': length, 'ids': ids}
+        return {'tokens': padded_ids, 'length': length, 'ids': ids, 'tags': labels}
 
-        # TODO: implement collate_fn
-        # raise NotImplementedError
-    
     def label2idx(self, label: str):
         return self.label_mapping[label]
 
     def idx2label(self, idx: int):
+        if idx == self.num_classes:
+            return self.padd_label()
         return self._idx2label[idx]

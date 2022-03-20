@@ -1,6 +1,7 @@
-# Sample Code for Homework 1 ADL NTU 109 Spring
+# Homework 1 ADL NTU 109 Spring
 
-## Environment
+## Training
+### Environment
 ```shell
 # If you have conda, we recommend you to build a conda environment called "adl"
 make
@@ -8,15 +9,26 @@ make
 pip install -r requirements.txt
 ```
 
-## Preprocessing
+### Preprocessing
 ```shell
 # To preprocess intent detectiona and slot tagging datasets
 bash preprocess.sh
 ```
 
-## Intent detection
+### Intent detection
 ```shell
 python train_intent.py
+```
+### Slot Tagging
+```shell
+python train_slot.py
+```
+
+## Inference
+```shell
+bash ./download.sh ./download.zip
+bash ./intent_cls.sh /path/to/test.json /path/to/pred.csv
+bash ./slot_tag.sh /path/to/test.json /path/to/pred.csv
 ```
 
 # 實驗紀錄 - intent
@@ -52,14 +64,15 @@ python train_intent.py
 | best_1.ckpt | 0.76 | 1e-3 | 128    |   2    |   16    |  0.2   |   512    |   200  | 0.2 | true | layer norm GELU, padding with index 9, lr=3e-1, batch_norm, focol_loss, weight balance (pass baseline: 0.728) |
 | best_2.ckpt | 0.77 | 1e-3 | 128    |   2    |   16    |  0.2   |   512    |   200  | 0.2 | true | layer norm GELU, padding with index 9, lr=3e-1, batch_norm, CE weight balance (pass baseline: 0.745) |
 | best_2.ckpt | 0.778 | 1e-3 | 128    |   2    |   32    |  0.2   |   512    |   200  | 0.2 | true | layer norm GELU, padding with index 9, lr=3e-1, batch_norm, CE weight balance (pass baseline: 0.77) |
+| best.ckpt | 0.776 | 1e-3 | 128    |   2    |   27    |  0.2   |   512    |   200  | 0.2 | true | layer norm GELU, padding with index 9, lr=3e-1, batch_norm, CE weight balance (pass baseline: 0.749) final used |
 
 
 # Report
 ## Q1
-Describe how do you use the data for intent_cls.sh, slot_tag.sh: 
-How do you tokenize the data.
-The pre-trained embedding you used.
-If you use the sample code, you will need to explain what it does in your own ways to answer Q1.
+1. Describe how do you use the data for intent_cls.sh, slot_tag.sh: 
+    - How do you tokenize the data.
+    - The pre-trained embedding you used.
+2. If you use the sample code, you will need to explain what it does in your own ways to answer Q1.
 
 ## Q2
 - Describe
@@ -78,10 +91,10 @@ If you use the sample code, you will need to explain what it does in your own wa
     - The optimization algorithm (e.g. Adam), learning rate and batch size.
 
 ## Q4
-Please use seqeval to evaluate your model in Q3 on validation set and report classification_report(scheme=IOB2, mode=’strict’).
-Explain the differences between the evaluation method in seqeval, token accuracy, and joint accuracy.
+- Please use seqeval to evaluate your model in Q3 on validation set and report classification_report(scheme=IOB2, mode=’strict’).
+- Explain the differences between the evaluation method in seqeval, token accuracy, and joint accuracy.
 
 ## Q5
-Please try to improve your baseline method (in Q2 or Q3) with different configuration (includes but not limited to different number of layers, hidden dimension, GRU/LSTM/RNN) and EXPLAIN how does this affects your performance / speed of convergence / ...
-Some possible BONUS tricks that you can try: multi-tasking, few-shot learning, zero-shot learning, CRF, CNN-BiLSTM
-This question will be grade by the completeness of your experiments and your findings.
+- Please try to improve your baseline method (in Q2 or Q3) with different configuration (includes but not limited to different number of layers, hidden dimension, GRU/LSTM/RNN) and EXPLAIN how does this affects your performance / speed of convergence / ...
+- Some possible BONUS tricks that you can try: multi-tasking, few-shot learning, zero-shot learning, CRF, CNN-BiLSTM
+- This question will be grade by the completeness of your experiments and your findings.

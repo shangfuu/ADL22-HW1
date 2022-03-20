@@ -56,9 +56,9 @@ def main(args):
             
             preds = preds.cpu().numpy()
 
-            for i, preds in enumerate(preds):
-                preds = preds[:length[i]]
-                rst_dict[ids[i]] = [dataset.idx2label(idx=pred_id) for pred_id in preds]
+            for i, pred in enumerate(preds):
+                pred = pred[:length[i]]
+                rst_dict[ids[i]] = [dataset.idx2label(idx=pred_id) for pred_id in pred]
     
     # write prediction to file (args.pred_file)
     with open(args.pred_file, "w") as f:

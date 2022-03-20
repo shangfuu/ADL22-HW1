@@ -10,7 +10,8 @@ from tqdm import trange, tqdm
 from torch.utils.data import DataLoader
 import matplotlib.pyplot as plt
 import numpy as np
-from seqeval.metrics import f1_score, accuracy_score
+from seqeval.metrics import f1_score, accuracy_score, classification_report
+from seqeval.scheme import IOB2
 
 from model import SlottTagger
 from dataset import SlotTagDataset
@@ -120,38 +121,66 @@ def main(args):
         model.eval()
         eval_correct = .0
         eval_loss = .0
+        token_acc = .0
+        token_num = .0
+        y_true = []
+        y_pred = []
         for eval_data in tqdm(dataloader[DEV], desc="Val"):
             with torch.no_grad():
-                features, labels, ids = eval_data['tokens'], eval_data['tags'], eval_data['ids']
+                features, labels, ids, length = eval_data['tokens'], eval_data['tags'], eval_data['ids'], eval_data['length']
                 features, labels = torch.tensor(features).to(
                     args.device), torch.tensor(labels).to(args.device)
                 out = model(features)
 
                 loss = criterion(out, labels)
-                _, pred = torch.max(out, 1)
-
-                eval_correct += sum([1 if seq.all()
-                                    else 0 for seq in (pred.cpu() == labels.cpu())])
+                out = out.permute(0,2,1)
+                _, preds = torch.max(out, 2)
                 
+                preds = preds.cpu().numpy()
+                labels = labels.cpu().numpy()
+                # seqeval
+                for b, pred, lbl in zip(length, preds, labels):
+                    pred = pred[:b]
+                    lbl = lbl[:b]
+                    batch_pred = [datasets[DEV].idx2label(idx=pred_id) for pred_id in pred]
+                    batch_true = [datasets[DEV].idx2label(idx=lbl_id) for lbl_id in lbl]
+                    y_pred.append(batch_pred)
+                    y_true.append(batch_true)
+
+                    # token acc
+                    token_num += len(batch_true)
+                    token_acc += sum(np.array(batch_true) == np.array(batch_pred))
+
+                # joint acc
+                eval_correct += sum([1 if seq.all()
+                                    else 0 for seq in (preds == labels)])
                 eval_loss += loss.item()
 
         eval_acc = eval_correct / len(data[DEV])
         eval_loss /= len(dataloader[DEV])
 
-        eval_acc_curve.append(eval_acc)
-        eval_loss_curve.append(eval_loss)
-        train_loss_curve.append(train_loss)
-        train_acc_curve.append(train_acc)
-
         print("Train ACC: {:.4f} Loss: {:.4f}".format(train_acc, train_loss))
-        print("Val f1: {:.4f} Loss: {:.4f}".format(eval_acc, eval_loss))
+        print("Val Acc: {:.4f} Loss: {:.4f}".format(eval_acc, eval_loss))
 
         # late accuracy and save model weights
         if eval_acc > best_acc:
             best_acc = eval_acc
-            torch.save(model.state_dict(), args.ckpt_dir / 'best.pt')
-            print('saving model with loss {:.4f}'.format(best_acc))
-
+            torch.save(model.state_dict(), args.ckpt_dir / '_best.pt')
+            print('saving model with acc {:.4f}'.format(best_acc))
+            
+            # show seqeval
+            print("-"*50)
+            cr = classification_report(y_true, y_pred, mode='strict', scheme=IOB2)
+            print(cr)
+            print("Joint ACC: {:.4f}".format(eval_acc))
+            print("Token ACC: {:.4f}".format(token_acc / token_num))
+        
+        # plot curve
+        eval_acc_curve.append(eval_acc)
+        eval_loss_curve.append(eval_loss)
+        train_loss_curve.append(train_loss)
+        train_acc_curve.append(train_acc)
+        
         plt.plot(eval_acc_curve)
         plt.plot(train_acc_curve)
         plt.legend(["eval", "train"])
