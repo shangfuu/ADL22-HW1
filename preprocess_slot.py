@@ -43,7 +43,9 @@ def max_len():
         logging.info(f"Dataset loaded at {str(dataset_path.resolve())}")
         
         max_len = max([len(tag) for instance in dataset for tag in instance["tokens"]])
-    
+        if split == "train":
+            median = sorted([len(tag) for instance in dataset for tag in instance["tokens"]])
+            print(median)
         max_lens.append(max_len)
         print(max_len)
     print(max(max_lens))

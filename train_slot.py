@@ -15,7 +15,7 @@ from seqeval.metrics import f1_score, accuracy_score
 from model import SlottTagger
 from dataset import SlotTagDataset
 from utils import Vocab
-from focal_loss import focal_loss
+# from focal_loss import focal_loss
 
 TRAIN = "train"
 DEV = "eval"
@@ -37,7 +37,7 @@ def main(args):
         for split, split_data in data.items()
     }
 
-    # TODO: create DataLoader for train / dev datasets
+    # create DataLoader for train / dev datasets
     dataloader: Dict[str, DataLoader] = {
         split: (DataLoader(dataset, batch_size=args.batch_size, collate_fn=dataset.collate_fn, shuffle=True)
                 if split == TRAIN else
@@ -70,35 +70,29 @@ def main(args):
     embeddings = torch.load(args.cache_dir / "embeddings.pt")
 
     num_classes = len(tag2idx)
-    # TODO: init model and move model to target device(cpu / gpu)
+    # init model and move model to target device(cpu / gpu)
     model = SlottTagger(embeddings=embeddings, hidden_size=args.hidden_size,
                         num_layers=args.num_layers, dropout=args.dropout,
-                        bidirectional=args.bidirectional, num_class=num_classes,
-                        sequence_length=args.max_len).to(args.device)
+                        bidirectional=args.bidirectional, num_class=num_classes).to(args.device)
 
-    # TODO: init optimizer
+    # init optimizer
     optimizer = torch.optim.Adam(
         model.parameters(), lr=args.lr, weight_decay=1e-8)
-
-    # optimizer = torch.optim.SGD(model.parameters(), lr=args.lr)
-    # optimizer = torch.optim.RMSprop(model.parameters(), lr=args.lr, weight_decay=1e-8, momentum=0.9)
     # scheduler = torch.optim.lr_scheduler.StepLR(
     #     optimizer, step_size=200, gamma=0.5)
 
-    # criterion = torch.nn.CrossEntropyLoss(label_smoothing=0.1)
     criterion = torch.nn.CrossEntropyLoss(
         weight=class_weight, label_smoothing=0.01)
     # criterion = focal_loss(alpha=class_weight, gamma=2, reduction='mean', device=args.device)
 
-    best_f1 = .0
-    # best_loss = float('inf')
+    best_acc = .0
     train_acc_curve = []
     train_loss_curve = []
     eval_acc_curve = []
     eval_loss_curve = []
 
     for epoch in range(args.num_epoch):
-        # TODO: Training loop - iterate over train dataloader and update model weights
+        # Training loop - iterate over train dataloader and update model weights
         model.train()
         train_correct = 0.0
         train_loss = 0.0
@@ -113,20 +107,17 @@ def main(args):
             loss.backward()
             optimizer.step()
             _, pred = torch.max(out, 1)
-            # train_correct += [1 if (pred.cpu() == labels.cpu()).all() else 0]
+            
             train_correct += sum([1 if seq.all()
                                  else 0 for seq in (pred.cpu() == labels.cpu())])
-            # train_correct += (out.argmax(dim=-1) == labels).float().mean()
+            
             train_loss += loss.item()
 
         train_acc = train_correct / len(data[TRAIN])
-        # train_acc = train_correct / len(dataloader[TRAIN])
         train_loss /= len(dataloader[TRAIN])
-        # scheduler.step()
 
-        # TODO: Evaluation loop - calcu
+        # Evaluation loop
         model.eval()
-        # eval_f1 = .0
         eval_correct = .0
         eval_loss = .0
         for eval_data in tqdm(dataloader[DEV], desc="Val"):
@@ -141,36 +132,25 @@ def main(args):
 
                 eval_correct += sum([1 if seq.all()
                                     else 0 for seq in (pred.cpu() == labels.cpu())])
-                # y_pred = [datasets[DEV].idx2label(tag.item()) for batch in pred for tag in batch]
-                # y_true = [datasets[DEV].idx2label(label.item()) for batch in labels for label in batch]
-                # print("pred shape:", pred.shape)
-                # print("label shape:", labels.shape)
-                # valid_f1 = f1_score(y_pred, y_true)
+                
                 eval_loss += loss.item()
 
         eval_acc = eval_correct / len(data[DEV])
-        # eval_f1 = valid_f1 / len(data[DEV])
         eval_loss /= len(dataloader[DEV])
 
-        # eval_acc_curve.append(eval_f1)
         eval_acc_curve.append(eval_acc)
         eval_loss_curve.append(eval_loss)
         train_loss_curve.append(train_loss)
         train_acc_curve.append(train_acc)
 
-        # tqdm.write("\n")
         print("Train ACC: {:.4f} Loss: {:.4f}".format(train_acc, train_loss))
         print("Val f1: {:.4f} Loss: {:.4f}".format(eval_acc, eval_loss))
 
         # late accuracy and save model weights
-        if eval_acc > best_f1:
-            best_f1 = eval_acc
-            torch.save(model.state_dict(), args.ckpt_dir / 'best_00.pt')
-            print('saving model with loss {:.4f}'.format(best_f1))
-
-        # # early stop
-        # if len(eval_acc_curve) > 40 and (max(eval_acc_curve[-20:]) - best_acc) < 0.01:
-        #     break
+        if eval_acc > best_acc:
+            best_acc = eval_acc
+            torch.save(model.state_dict(), args.ckpt_dir / 'best.pt')
+            print('saving model with loss {:.4f}'.format(best_acc))
 
         plt.plot(eval_acc_curve)
         plt.plot(train_acc_curve)
@@ -192,8 +172,7 @@ def main(args):
         plt.savefig("curve_loss")
         plt.clf()
 
-    print("best acc:", best_f1)
-    # TODO: Inference on test set
+    print("best acc:", best_acc)
 
 
 def parse_args() -> Namespace:
@@ -218,7 +197,7 @@ def parse_args() -> Namespace:
     )
 
     # data
-    parser.add_argument("--max_len", type=int, default=32)
+    parser.add_argument("--max_len", type=int, default=27)
 
     # model
     parser.add_argument("--hidden_size", type=int, default=128)

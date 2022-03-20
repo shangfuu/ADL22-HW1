@@ -127,7 +127,6 @@ class SlotTagDataset(Dataset):
                 # padding
                 for idx, padded_id in enumerate(padded_ids[batch]):
                     if padded_id == 0:
-                        # tag = self.label2idx(self.padd_label())
                         tag = self.num_classes
                     else:
                         tag = self.label2idx(sample['tags'][idx])

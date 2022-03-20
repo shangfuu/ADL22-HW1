@@ -48,10 +48,10 @@ python train_intent.py
 | best_7.ckpt | 0.776 | 1e-3 | 64    |   2    |   16    |  0.2   |   512    |   100  | 0.2 | true | layer norm SiLU, padding with index 9 |
 | best_7.ckpt | 0.783 | 1e-3 | 128    |   3    |   16    |  0.2   |   512    |   100  | 0.2 | true | layer norm SiLU, padding with index 9 |
 | best_1.ckpt | 0.775 | 1e-3 | 128    |   2    |   16    |  0.2   |   512    |   100  | 0.2 | true | layer norm SiLU, padding with index 9 |
-| best_1.ckpt | 0.801 | 1e-3 | 128    |   2    |   16    |  0.2   |   512    |   100  | 0.2 | true | layer norm SiLU, padding with index 9, batch_norm |
-| best_1.ckpt | 0.801 | 1e-3 | 128    |   2    |   16    |  0.2   |   512    |   200  | 0.2 | true | layer norm GELU, padding with index 9, lr=3e-1, batch_norm, focol_loss, weight balance (pass baseline: 0.728) |
-| best_2.ckpt | 0.801 | 1e-3 | 128    |   2    |   16    |  0.2   |   512    |   200  | 0.2 | true | layer norm GELU, padding with index 9, lr=3e-1, batch_norm, CE weight balance (pass baseline: 0.745) |
-| best_2.ckpt | 0.801 | 1e-3 | 128    |   2    |   32    |  0.2   |   512    |   200  | 0.2 | true | layer norm GELU, padding with index 9, lr=3e-1, batch_norm, CE weight balance (pass baseline: 0.77) |
+| best_1.ckpt | 0.76 | 1e-3 | 128    |   2    |   16    |  0.2   |   512    |   100  | 0.2 | true | layer norm SiLU, padding with index 9, batch_norm |
+| best_1.ckpt | 0.76 | 1e-3 | 128    |   2    |   16    |  0.2   |   512    |   200  | 0.2 | true | layer norm GELU, padding with index 9, lr=3e-1, batch_norm, focol_loss, weight balance (pass baseline: 0.728) |
+| best_2.ckpt | 0.77 | 1e-3 | 128    |   2    |   16    |  0.2   |   512    |   200  | 0.2 | true | layer norm GELU, padding with index 9, lr=3e-1, batch_norm, CE weight balance (pass baseline: 0.745) |
+| best_2.ckpt | 0.778 | 1e-3 | 128    |   2    |   32    |  0.2   |   512    |   200  | 0.2 | true | layer norm GELU, padding with index 9, lr=3e-1, batch_norm, CE weight balance (pass baseline: 0.77) |
 
 
 # Report

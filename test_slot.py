@@ -22,7 +22,7 @@ def main(args):
 
     data = json.loads(args.test_file.read_text())
     dataset = SlotTagDataset(data, vocab, tag2idx, args.max_len)
-    # TODO: crecate DataLoader for test dataset
+    # create DataLoader for test dataset
     dataloader = DataLoader(dataset, batch_size=args.batch_size, collate_fn=dataset.collate_fn, shuffle=False)
 
     embeddings = torch.load(args.cache_dir / "embeddings.pt")
@@ -34,7 +34,6 @@ def main(args):
         args.dropout,
         args.bidirectional,
         dataset.num_classes,
-        args.max_len
     )
     model.eval()
 
@@ -42,7 +41,7 @@ def main(args):
     # load weights into model
     model.load_state_dict(ckpt)
 
-    # TODO: predict dataset
+    # predict dataset
     rst_dict = {}
     model.eval()
     for test_data in tqdm(dataloader, desc="Test"):
@@ -53,25 +52,21 @@ def main(args):
             out = model(features).to(args.device)
             
             out = torch.permute(out, (0,2,1))
-            
             _, preds = torch.max(out, 2)
             
             preds = preds.cpu().numpy()
-            
-            # print(preds.shape)
-            # print(preds)
 
             for i, preds in enumerate(preds):
                 preds = preds[:length[i]]
                 rst_dict[ids[i]] = [dataset.idx2label(idx=pred_id) for pred_id in preds]
     
-    # TODO: write prediction to file (args.pred_file)
+    # write prediction to file (args.pred_file)
     with open(args.pred_file, "w") as f:
         f.write('id,tags\n')
         for id, tag_list in rst_dict.items():
             tag = ''.join(tag + " " for tag in tag_list).strip()
             f.write('{},{}\n'.format(id, tag))
-    
+
 
 def parse_args() -> Namespace:
     parser = ArgumentParser()
@@ -96,7 +91,7 @@ def parse_args() -> Namespace:
     parser.add_argument("--pred_file", type=Path, default="pred.slot.csv")
 
     # data
-    parser.add_argument("--max_len", type=int, default=32)
+    parser.add_argument("--max_len", type=int, default=27)
 
     # model
     parser.add_argument("--hidden_size", type=int, default=128)
