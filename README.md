@@ -35,7 +35,7 @@ python train_intent.py
 | best_6.ckpt | 0.943 | 1e-3 | 128 | 2 | 32 | 0.3 | 512 | 100 | False | true | dropout BN LR(0.1), scheduler(step10, 0.5) |
 | best_7.ckpt | 0.939 | 1e-3 | 128 | 2 | 32 | 0.2 | 512 | 100 | False | true | dropout BN LR(0.15), scheduler(step10, 0.5) |
 
-# 實驗紀錄 - intent
+# 實驗紀錄 - slot
 | name | val_acc | lr | hidden_size | num_layers | max_len | dropout | batch_size | num_epoch | dropout_layer | shuffle | others |
 | ---- | ------- | -- | ----------- | ---------- | ------- | ------- | ---------- | --------- | ------------ | -------- | ------ |
 | bset_7.ckpt | 0.77 | 1e-3 | 128    |   3      |   32    |  0.2   |   512    |   100  | 0.2 | true | |
@@ -50,6 +50,9 @@ python train_intent.py
 | best_1.ckpt | 0.775 | 1e-3 | 128    |   2    |   16    |  0.2   |   512    |   100  | 0.2 | true | layer norm SiLU, padding with index 9 |
 | best_1.ckpt | 0.801 | 1e-3 | 128    |   2    |   16    |  0.2   |   512    |   100  | 0.2 | true | layer norm SiLU, padding with index 9, batch_norm |
 | best_1.ckpt | 0.801 | 1e-3 | 128    |   2    |   16    |  0.2   |   512    |   200  | 0.2 | true | layer norm GELU, padding with index 9, lr=3e-1, batch_norm, focol_loss, weight balance (pass baseline: 0.728) |
+| best_2.ckpt | 0.801 | 1e-3 | 128    |   2    |   16    |  0.2   |   512    |   200  | 0.2 | true | layer norm GELU, padding with index 9, lr=3e-1, batch_norm, CE weight balance (pass baseline: 0.745) |
+| best_2.ckpt | 0.801 | 1e-3 | 128    |   2    |   32    |  0.2   |   512    |   200  | 0.2 | true | layer norm GELU, padding with index 9, lr=3e-1, batch_norm, CE weight balance (pass baseline: 0.77) |
+
 
 # Report
 ## Q1

@@ -79,7 +79,7 @@ def main(args):
     # TODO: init optimizer
     optimizer = torch.optim.Adam(
         model.parameters(), lr=args.lr, weight_decay=1e-8)
-    
+
     # optimizer = torch.optim.SGD(model.parameters(), lr=args.lr)
     # optimizer = torch.optim.RMSprop(model.parameters(), lr=args.lr, weight_decay=1e-8, momentum=0.9)
     # scheduler = torch.optim.lr_scheduler.StepLR(
@@ -104,32 +104,24 @@ def main(args):
         train_loss = 0.0
         print(f"\nEpoch: {epoch+1} / {args.num_epoch}")
         for train_data in tqdm(dataloader[TRAIN], desc="Train"):
-
             features, labels, ids = train_data['tokens'], train_data['tags'], train_data['ids']
             features, labels = torch.tensor(features).to(
                 args.device), torch.tensor(labels).to(args.device)
-
             out = model(features)
-
             optimizer.zero_grad()
             loss = criterion(out, labels)
-
             loss.backward()
             optimizer.step()
-
             _, pred = torch.max(out, 1)
-
             # train_correct += [1 if (pred.cpu() == labels.cpu()).all() else 0]
             train_correct += sum([1 if seq.all()
                                  else 0 for seq in (pred.cpu() == labels.cpu())])
-
             # train_correct += (out.argmax(dim=-1) == labels).float().mean()
             train_loss += loss.item()
 
         train_acc = train_correct / len(data[TRAIN])
         # train_acc = train_correct / len(dataloader[TRAIN])
         train_loss /= len(dataloader[TRAIN])
-
         # scheduler.step()
 
         # TODO: Evaluation loop - calcu
@@ -151,18 +143,15 @@ def main(args):
                                     else 0 for seq in (pred.cpu() == labels.cpu())])
                 # y_pred = [datasets[DEV].idx2label(tag.item()) for batch in pred for tag in batch]
                 # y_true = [datasets[DEV].idx2label(label.item()) for batch in labels for label in batch]
-                
                 # print("pred shape:", pred.shape)
                 # print("label shape:", labels.shape)
-                
                 # valid_f1 = f1_score(y_pred, y_true)
-                
                 eval_loss += loss.item()
 
         eval_acc = eval_correct / len(data[DEV])
         # eval_f1 = valid_f1 / len(data[DEV])
         eval_loss /= len(dataloader[DEV])
-        
+
         # eval_acc_curve.append(eval_f1)
         eval_acc_curve.append(eval_acc)
         eval_loss_curve.append(eval_loss)
@@ -176,7 +165,7 @@ def main(args):
         # late accuracy and save model weights
         if eval_acc > best_f1:
             best_f1 = eval_acc
-            torch.save(model.state_dict(), args.ckpt_dir / 'best_2.pt')
+            torch.save(model.state_dict(), args.ckpt_dir / 'best_00.pt')
             print('saving model with loss {:.4f}'.format(best_f1))
 
         # # early stop
@@ -202,7 +191,7 @@ def main(args):
             args.num_epoch) if epoch % 10 == 0])
         plt.savefig("curve_loss")
         plt.clf()
-    
+
     print("best acc:", best_f1)
     # TODO: Inference on test set
 
@@ -229,7 +218,7 @@ def parse_args() -> Namespace:
     )
 
     # data
-    parser.add_argument("--max_len", type=int, default=16)
+    parser.add_argument("--max_len", type=int, default=32)
 
     # model
     parser.add_argument("--hidden_size", type=int, default=128)
