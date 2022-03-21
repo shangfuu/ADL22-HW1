@@ -46,8 +46,7 @@ self.fc = nn.Sequential(
     nn.Linear(hidden_size, num_class)
 )
 ```
-![](./images/intent/curve_acc.png)
-![](./images/intent/curve_loss.png)
+![](./images/intent/loss_acc.png)
 
 ## Slot
 ```pyhton=
@@ -64,8 +63,7 @@ self.fc2 = nn.Sequential(
     nn.Linear(hidden_size, num_class)
 )
 ```
-![](./images/slot/curve_acc.png)
-![](./images/slot/curve_loss.png)
+![](./images/slot/loss_acc.png)
 
 # 實驗紀錄
 ## Intent
