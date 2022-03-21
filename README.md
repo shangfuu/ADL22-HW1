@@ -69,16 +69,15 @@ self.fc2 = nn.Sequential(
 
 # 實驗紀錄
 ## Intent
-| name | val_acc | lr | hidden_size | num_layers | max_len | dropout | batch_size | num_epoch | dropout_layer | shuffle | others |
-| ---- | ------- | -- | ----------- | ---------- | ------- | ------- | ---------- | --------- | ------------ | -------- | ------ |
-| bset_0.pt | 0.83 | 1e-3 | 1024    |   2      |   32    |  0.2   |   256    |   200  | false | false |
-| best_1.pt | 0.8737 | 1e-3 | 1024 | 2 | 32 | 0.2 | 256 | 50 | false | true |
-| best_3.pt | 0.8923 | 1e-3 | 1024 | 2 | 32 | 0.2 | 64 | 50 | after fc | true |
-| best_4.pt | 0.92 | 1e-3 | 64 | 2 | 32 | 0.2 | 512 | 100 | False | True | two layer fc with BN ReLU |
-| best_4.pt | 0.929 | 1e-3 | 64 | 2 | 32 | 0.2 | 512 | 100 | False | true | dropout BN LReLU, wd=0.000001 |
-| best_5.pt | 0.938 | 1e-3 | 128 | 2 | 32 | 0.2 | 512 | 100 | False | True | tow layer fc with BN and LeakyReLU |
-| best_6.pt | 0.943 | 1e-3 | 128 | 2 | 32 | 0.3 | 512 | 100 | False | true | dropout BN LReLU(0.1), scheduler(step10, 0.5) |
-| best_7.pt | 0.939 | 1e-3 | 128 | 2 | 32 | 0.2 | 512 | 100 | False | true | dropout BN LReLU(0.15), scheduler(step10, 0.5) |
+| name | val_acc | lr | hidden_size | num_layers | max_len | dropout | batch_size | num_epoch | dropout_layer  | others |
+| ---- | ------- | -- | ----------- | ---------- | ------- | ------- | ---------- | --------- | ------------  | ------ |
+| bset_0.pt | 0.83 | 1e-3 | 1024    |   2      |   32    |  0.2   |   256    |   100   | not added |
+| best_3.pt | 0.8923 | 1e-3 | 1024 | 2 | 32 | 0.2 | 64 | 50 | before fc | 
+| best_4.pt | 0.92 | 1e-3 | 64 | 2 | 32 | 0.2 | 512 | 100 | between 2 fc |  two layer fc with BN ReLU (PASS BASELINE) |
+| best_4.pt | 0.929 | 1e-3 | 64 | 2 | 32 | 0.2 | 512 | 100 | between 2 fc |  BN LReLU, wd=0.000001 |
+| best_5.pt | 0.938 | 1e-3 | 128 | 2 | 32 | 0.2 | 512 | 100 | between 2 fc | tow layer fc with BN and LeakyReLU |
+| best_6.pt | 0.943 | 1e-3 | 128 | 2 | 32 | 0.3 | 512 | 100 | between 2 fc | BN LReLU(0.1), scheduler(step10, 0.5) |
+| best_7.pt | 0.939 | 1e-3 | 128 | 2 | 32 | 0.2 | 512 | 100 | between 2 fc | BN LReLU(0.2), scheduler(step10, 0.5), (BEST RESULT) |
 
 ## Slot
 | name | val_acc | lr | hidden_size | num_layers | max_len | dropout | batch_size | num_epoch | dropout_layer | shuffle | others |
